@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Website</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">  
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #141414;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: end;
+            align-items: center;
+            padding: 20px 0;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .movie-card {
+            cursor: pointer;
+        }
+
+        .user-movie-item {
+            cursor: pointer;
+        }
+
+        .modal-content {
+            width: 80%;
+            max-width: 600px;
+            max-height: 80%;
+            /* Giới hạn chiều cao */
+            overflow-y: auto;
+            /* Tạo thanh cuộn dọc */
+            margin: auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #e50914;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .movie-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .movie-card {
+            background-color: #2f2f2f;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+        }
+
+        .movie-poster {
+            width: 100%;
+            height: 300px;
+            background-color: #404040;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .movie-info {
+            padding: 15px;
+        }
+
+        .movie-title {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .movie-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .genre-tag {
+            background-color: #e50914;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .star {
+            color: gold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background-color: #2f2f2f;
+            margin: 5% auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+        }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 10px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        .user-movies {
+            margin-top: 20px;
+        }
+
+        .user-movie-item {
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #404040;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .user-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .movie-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .movie-poster {
+                height: 225px;
+            }
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2em;
+        }
+
+        .movie-poster {
+            background: #f0f0f0;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            border-radius: 4px;
+        }
+
+        .movie-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .movie-title {
+            margin: 0;
+            font-size: 1em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .movie-genres-container {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .movie-genres {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .genre-tag {
+            background: #e50914;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            white-space: nowrap;
+        }
+
+        .rating {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .star {
+            color: gold;
+        }
+
+        /* Tùy chỉnh thanh cuộn */
+        .movie-genres-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .movie-genres-container::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .movie-genres-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 2px;
+        }
+
+        .movie-genres-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        .logout-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .recommend-title {
+            margin: 14px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="user-info"   onclick="openUserModal()">
+                <div class="avatar">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="user-details">
+                    <div id="userName"></div>
+                </div>
+            </div>
+        </header>
+
+        <h1 class="text-center fw-bold  mb-4">Movie Recommendations</h1>
+        <h2 class="recommendation-description text-center fs-6  mb-3">Discover your next favorite film!</h2>
+        <main class="recommended-movies movie-grid">
+            <div class="loading text-center">Loading movies...</div>
+        </main>
+
+        <h1 class="text-center fw-bold  mb-4">You May Also Like</h1>
+        <h2 class="suggestion-description text-center fs-6 mb-3">Suggestions based on your history.</h2>
+        <main class="suggested-movies movie-grid">
+            <div class="loading text-center">Loading movies...</div>
+        </main>
+
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <div class="user-profile">
+
+                <div class="user-movies">
+                    <h3 class="text-center ">Rated Movies</h3>
+                    <div id="userMoviesList">
+                    </div>
+                </div>
+                <button class="btn btn-danger logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let USER = null;
+        let MOVIES = [];
+
+        async function fetchUser(userId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/user/${userId}`);
+                if (!response.ok) throw new Error('Failed to fetch user');
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.error('Error fetching user:', error);
+                return null;
+            }
+        }
+
+        async function fetchMovies(movieIds) {
+            const moviePromises = movieIds.map(id => fetchMovie(id));
+            return (await Promise.all(moviePromises)).filter(movie => movie !== null);
+        }
+
+        async function fetchRecommendations(userId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/recommend/${userId}`);
+                if (!response.ok) throw new Error('Failed to fetch recommendations');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching recommendations:', error);
+                return {recommendedMovieIds: [], originalTitle: '' };
+            }
+        }
+
+        async function fetchSimilarMovies(userId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/similar/${userId}`);
+                if (!response.ok) throw new Error('Failed to fetch similar movies');
+                return await response.json();
+            } catch (error) {
+                console.error('Error fetching similar movies:', error);
+                return {recommendedMovieIds: [], originalTitle: ''};
+            }
+        }
+
+        async function initializeMovies(userId) {
+            const movieGrid1 = document.querySelector('.recommended-movies');
+            const movieGrid2 = document.querySelector('.suggested-movies');
+            const recommendationDescription = document.querySelector('.recommendation-description');
+            const suggestionDescription = document.querySelector('.suggestion-description');
+
+            // Show loading indicators
+            movieGrid1.innerHTML = '<div class="loading">Loading movies...</div>';
+            movieGrid2.innerHTML = '<div class="loading">Loading similar movies...</div>';
+
+            // Fetch and render movies in a single function
+            await renderMovies(movieGrid1, recommendationDescription, fetchRecommendations, userId, 'recommended');
+            await renderMovies(movieGrid2, suggestionDescription, fetchSimilarMovies, userId, 'similar');
+        }
+
+        async function renderMovies(gridElement, descriptionElement, fetchFunction, userId, type) {
+            const data = await fetchFunction(userId);
+            const movieIds = type === 'recommended' ? data.recommendedMovieIds : data.recommendedMovieIds;
+            const originalTitle = type === 'recommended' ? data.originalTitle : data.originalTitle;
+
+            descriptionElement.innerText = type === 'recommended'
+                ? `These films are recommended based on "${originalTitle}".`
+                : `You may also like these films similar to "${originalTitle}".`;
+
+            const movies = await fetchMovies(movieIds);
+            gridElement.innerHTML = ''; // Clear existing content
+            movies.forEach(movie => {
+                if (movie) {
+                    gridElement.appendChild(createMovieCard(movie));
+                }
+            });
+        }
+
+
+        async function fetchMovie(movieId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/movie/${movieId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                console.log(`Failed to fetch movie ID ${movieId}:`, error.message);
+                return null;
+            }
+        }
+
+        function createMovieCard(movie) {
+            const card = document.createElement('div');
+            card.className = 'movie-card';
+            const title = movie.title || movie.name;
+            const rating = movie.average_rating;
+            const genres = movie.genres;
+
+            let genresArray = [];
+            if (typeof genres === 'string') {
+                genresArray = genres.split(',').map(genre => genre.trim());
+            } else if (Array.isArray(genres)) {
+                genresArray = genres;
+            }
+
+            // Add click event to navigate to the details page
+            card.onclick = function () {
+                window.location.href = `details.html?id=${movie.movieid}`;
+            };
+
+            card.innerHTML = `
+                <div class="movie-poster">${title[0]}</div>
+                <div class="movie-info">
+                    <h3 class="movie-title" title="${title}">${title}</h3>
+                    <div class="movie-genres-container">
+                        <div class="movie-genres">
+                            ${genresArray.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="rating">
+                        ${rating.toFixed(2)} <span class="star">★</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function createUserMovieItem(movie) {
+            return `
+                <div class="user-movie-item" onclick="goToDetails(${movie.movieid})">
+                    <div class="movie-title">${movie.title}</div>
+                    <div class="user-rating">
+                        Your rating: ${movie.user_rating} <span class="star">★</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function goToDetails(movieId) {
+            window.location.href = `details.html?id=${movieId}`;
+        }
+
+        function openUserModal() {
+            const modal = document.getElementById('userModal');
+            const userMoviesList = document.getElementById('userMoviesList');
+
+            userMoviesList.innerHTML = USER.movies.map(movie => createUserMovieItem(movie)).join('');
+            modal.style.display = 'block';
+        }
+
+        function closeUserModal() {
+            const modal = document.getElementById('userModal');
+            modal.style.display = 'none';
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById('userModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        async function initialize() {
+            const userId = localStorage.getItem('userId');
+            USER = await fetchUser(userId);
+            if (USER) {
+                document.getElementById('userName').textContent = `id_${USER.userid}`;
+                await initializeMovies(userId);
+            } else {
+                document.getElementById('userName').textContent = 'Error loading user';
+                document.querySelector('.movie-grid-1').innerHTML = '<div class="loading">Error loading movies</div>';
+            }
+        }
+
+        window.addEventListener('load', function () {
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                window.location.href = 'movie.html';
+                return;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('userId');
+            window.location.href = 'login.html';
+        }
+
+        initialize();
+    </script>
+</body>
+
+</html>

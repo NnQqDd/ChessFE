@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Details</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar {
+            background-color: #1e1e1e;
+        }
+
+        .banner {
+            width: 100%;
+            height: 400px;
+            background-image: url('https://i.pinimg.com/564x/ee/dc/41/eedc4189ef40ba8cc951fa1522f2349a.jpg');
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .banner h1 {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 3em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .movie-details {
+            background-color: #1e1e1e;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: -50px;
+            z-index: 1;
+            position: relative;
+        }
+
+        .movie-title {
+            font-size: 2.5em;
+            margin: 0;
+        }
+
+        .movie-overview {
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+
+        .movie-genres {
+            margin-top: 10px;
+        }
+
+        .genre-tag {
+            background-color: #ff5722;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+
+        .rating {
+            margin-top: 10px;
+            font-size: 1.2em;
+        }
+
+        .back-button {
+            position: fixed;
+            /* Make the button fixed at the top */
+            top: 20px;
+            /* Distance from the top */
+            left: 20px;
+            /* Distance from the left */
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 15px 30px;
+            /* Increased padding for better touch area */
+            font-size: 1.2em;
+            /* Increased font size */
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            /* Smooth transition for hover effect */
+        }
+
+        .back-button:hover {
+            background-color: #b5320a;
+            transform: scale(1.05);
+            /* Slightly enlarge on hover */
+        }
+
+        /* Rating Section Styling */
+        .rating-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* Movie Title Styling */
+        h3 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .rating-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .rating-stars button {
+            font-size: 2rem;
+            color: #555;
+            background: none;
+            border: none;
+            transition: color 0.3s ease;
+        }
+
+        .rating-stars button:hover,
+        .rating-stars button.hovered,
+        .rating-stars button.selected {
+            color: #f5c518;
+        }
+
+        #rating-response {
+            font-size: 1rem;
+            color: #4CAF50;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="banner" id="movie-banner">
+        <h1 id="banner-title"></h1>
+    </div>
+
+    <div class="container mt-4">
+        <div id="movie-details" class="movie-details"></div>
+    </div>
+
+    <button class="back-button" onclick="goBack()">Go Back</button>
+
+    <script>
+        // Function to get query parameter from URL
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        const movieId = getQueryParameter('id');
+
+        let selectedRating = 0;
+
+        function submitRating(rating) {
+            selectedRating = rating;
+            document.getElementById('rating-response').innerText = "Thank you for your rating!";
+            updateStarSelection();
+        }
+
+        function highlightStars(rating) {
+            resetStars();
+            const stars = document.querySelectorAll('.rating-stars button');
+            for (let i = 0; i < rating; i++) {
+                stars[i].classList.add('hovered');
+            }
+        }
+
+        function resetStars() {
+            const stars = document.querySelectorAll('.rating-stars button');
+            stars.forEach(star => star.classList.remove('hovered'));
+            updateStarSelection();
+        }
+
+        function updateStarSelection() {
+            const stars = document.querySelectorAll('.rating-stars button');
+            stars.forEach((star, index) => {
+                if (index < selectedRating) {
+                    star.classList.add('selected');
+                } else {
+                    star.classList.remove('selected');
+                }
+            });
+        }
+        // Fetch movie data from API
+        async function fetchMovieDetails(id) {
+            const response = await fetch(`http://127.0.0.1:5000/movie/${id}`);
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const movie = await response.json();
+            displayMovieDetails(movie);
+        }
+
+        function displayMovieDetails(movie) {
+            const movieDetailsDiv = document.getElementById('movie-details');
+            const genresHtml = movie.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('');
+
+            // Round the average rating to one decimal place
+            const roundedRating = movie.average_rating.toFixed(1);
+
+            movieDetailsDiv.innerHTML = `
+                <h1 class="movie-title">${movie.title} (${movie.year})</h1>
+                <p class="movie-overview">${movie.overview}</p>
+                <div class="movie-genres">${genresHtml}</div>
+                <div class="rating">Average Rating: ${roundedRating} <span class="star">★</span></div>
+                  <div class="rating-input">
+                    <div class="rating-section">
+                        <h3>Rate this movie:</h3>
+                        <div class="rating-stars">
+                            <button onclick="submitRating(1)">★</button>
+                            <button onclick="submitRating(2)">★</button>
+                            <button onclick="submitRating(3)">★</button>
+                            <button onclick="submitRating(4)">★</button>
+                            <button onclick="submitRating(5)">★</button>
+                        </div>
+                        <p id="rating-response"></p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Function to go back to the previous page
+        function goBack() {
+            window.history.back();
+	    
+        }
+
+        // Fetch movie data when the page loads
+        window.onload = () => {
+            if (movieId) {
+                fetchMovieDetails(movieId).catch(error => {
+                    document.getElementById('movie-details').innerText = 'Movie not found.';
+                    console.error('Error fetching movie details:', error);
+                });
+            } else {
+                document.getElementById('movie-details').innerText = 'Movie not found.';
+            }
+        };
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>
